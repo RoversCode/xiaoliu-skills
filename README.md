@@ -1,45 +1,29 @@
 # 小刘的常用 Skills
 
-这个仓库保存一套面向项目开发的 Agent Skills。五个 skill 可以单独调用，也可以按同一份文档合同协作。
+这个仓库收录我常用的 Agent Skills：有些组合成完整工作流，有些适合单独使用。工作流说明如何协作与交接；每个 skill 的实际指令只保留在自己的 `SKILL.md` 中。
 
 ## 工作流
 
+| 工作流 | 用途 |
+|---|---|
+| [软件开发工作流](workflows/software-development/README.md) | 从项目文档初始化、功能设计和领域建模，到单次功能开发与知识收尾。 |
+
+进入工作流页面可查看它包含的 skill、使用顺序、交接产物和适用边界。
+
+## 独立 Skills
+
+目前还没有单独归档的 skill。后续不属于某条工作流的 skill 会放在 `skills/<skill-name>/`，并直接列在这里。工作流里的 skill 也可以单独调用；它们的介绍放在相应工作流页面，避免根目录清单越来越难读。
+
+## 仓库结构
+
 ```text
-首次接手项目：project-docs-setup ──────────────────────────────┐
-新功能：       brainstorming → planning-with-files-zh → 实施与验证 → neat-freak
-                    ↕                                           ↕
-              domain-modeling（术语或重要决策变化时按需参与）───────┘
+README.md                         仓库介绍与目录
+workflows/<workflow>/README.md    一条工作流的组成、顺序与交接约定
+skills/<skill-name>/SKILL.md      可独立安装和调用的 Agent Skill
 ```
 
-`project-docs-setup` 通常每个项目运行一次；已有清晰文档结构时可以跳过。新功能如果需求和验收标准已经明确，可以直接进入 `planning-with-files-zh`。小修复、纯机械改动不必强制经历设计讨论或三文件计划。`neat-freak` 在功能完成后核对长期文档；独立的文档同步和交接任务也可直接调用它。
+一个 skill 只在 `skills/` 中维护一份。工作流通过链接引用它，因此同一个 skill 将来也能参与多条工作流，无需复制文件。新增工作流时，在 `workflows/` 中写说明并把它加入上面的清单；新增独立 skill 时，把它加入“独立 Skills”清单。
 
-| Skill | 何时使用 | 主要交付物 |
-|---|---|---|
-| [project-docs-setup](skills/project-docs-setup/SKILL.md) | 首次建立或修复项目文档入口 | 已核实的项目概览、文档导航、适用的 Agent 规则入口 |
-| [brainstorming](skills/brainstorming/SKILL.md) | 项目功能或系统行为的目标、边界、验收仍有实质歧义 | `docs/specs/` 中的设计稿，或项目既有设计文档 |
-| [domain-modeling](skills/domain-modeling/SKILL.md) | 领域词汇、边界或重要架构决策需要澄清 | `CONTEXT.md` / `CONTEXT-MAP.md`、必要的 ADR |
-| [planning-with-files-zh](skills/planning-with-files-zh/SKILL.md) | 开始一项已界定范围的功能开发 | `.planning/<feature>/` 下的计划、发现、进度 |
-| [neat-freak](skills/neat-freak/SKILL.md) | 实施后更新文档、规则和交接状态 | 与实现一致的长期文档及未闭合事项清单 |
+## 使用
 
-## 文档合同
-
-| 内容 | 权威位置 | 生命周期 |
-|---|---|---|
-| 项目目的、使用方式和现有能力 | 现有 README / 项目文档 | 持续维护；由 `project-docs-setup` 建入口，`neat-freak` 更新 |
-| 功能意图、范围和可观察的验收标准 | `docs/specs/<date>-<topic>.md`，或项目既有设计文档位置 | 设计与实施的依据；需求已清楚时也可直接写简短设计记录；与最终实现不一致时要明确修订或标注状态 |
-| 领域词汇和边界 | `CONTEXT.md`；多上下文项目使用 `CONTEXT-MAP.md` 指向各自的 `CONTEXT.md` | 术语确定时由 `domain-modeling` 更新；只写领域语义 |
-| 难逆转且不言自明程度低的决策及理由 | `docs/adr/`，或项目既有 ADR 位置 | 决策确定时写入；后续变更明确废弃或取代关系 |
-| 当前功能的步骤、发现、执行记录 | `.planning/<feature>/task_plan.md`、`findings.md`、`progress.md` | 临时工作记忆；不得成为项目事实的唯一权威来源 |
-| Agent 必须遵守的项目约束和文档入口 | 当前平台实际加载的 `AGENTS.md`、`CLAUDE.md` 或等价规则文件 | 保持简短；详细机制留在文档中 |
-
-所有路径都是新项目缺少既有约定时的默认值。已有文档布局和项目规则优先；同一事实保留一个权威解释，其余位置给出链接。不要为了凑齐目录而创建空文档。
-
-## 一项功能怎样交接
-
-1. 需求有实质歧义时，`brainstorming` 读项目背景和已有领域文档，形成带验收标准的设计稿；需求已清楚时，实施前直接保存简短设计记录。领域词汇或重要决策发生变化时，同时调用 `domain-modeling`。
-2. `planning-with-files-zh` 读取已确定的设计稿、相关 `CONTEXT.md` 和 ADR，建立该功能的计划。三份计划文件只记录怎样实施、发现了什么、做到哪一步，并链接长期文档。
-3. 实施和验证完成后，`neat-freak` 对照代码与可用的运行证据，更新 README、架构、使用和规则文档；必要时调用 `domain-modeling` 修订术语或 ADR。计划文件标记完成，临时文件是否清理由项目规则和当前授权决定。
-
-## 安装与迁移
-
-每个 `skills/<name>/` 都是独立的 Agent Skill，复制或链接到所用 Agent 的 skill 搜索目录即可。仓库中的相对引用不依赖某个用户主目录或 Claude 专属 hook。`project-docs-setup` 是原 `setup-matt-pocock-skills` 的工作流版本：保留“建立项目文档入口”的职责，移除了本流程未使用的 issue tracker、triage 配置。旧版源目录未被本仓库修改；若已安装旧版，应以新版目录替换，避免同一职责出现两份不同规则。
+打开工作流页面选择适用的 skill。每个 `skills/<skill-name>/` 都是独立的 Agent Skill，可复制或链接到所用 Agent 的 skill 搜索目录。安装时保留整个 skill 目录，以便其中的模板、脚本和参考文件仍能通过相对路径访问。
