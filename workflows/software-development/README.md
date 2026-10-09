@@ -4,6 +4,18 @@
 
 这条工作流把项目文档初始化、功能设计、领域建模、实施计划和知识收尾连接起来。五个 skill 可以独立调用；只有当前工作需要的阶段才运行。
 
+## 安装
+
+安装 [Node.js 和 Git](../../README.md#命令安装) 后，运行下面的命令，为 Codex 安装这套工作流的五个 skill：
+
+```sh
+npx skills add RoversCode/xiaoliu-skills --skill project-docs-setup brainstorming domain-modeling planning-with-files-zh neat-freak --agent codex -g -y
+```
+
+将 `codex` 替换为 `claude-code` 或 `cursor`，可安装到对应 Agent；省略 `-g` 则只安装到当前项目。这里只选择本工作流使用的五个 skill，仓库以后增加其他工作流或独立 skill 时，这条命令仍适用。
+
+安装完成后，按下面的流程调用需要的 skill。例如在 Codex 中，首次接手项目时调用 `$project-docs-setup`，有设计问题时调用 `$brainstorming`。安装会使五个 skill 可用，执行顺序由当前任务和实际调用决定。
+
 ## 流程
 
 ```text
