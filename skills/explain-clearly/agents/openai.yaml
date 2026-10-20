@@ -1,0 +1,4 @@
+interface:
+  display_name: "explain-clearly"
+  short_description: "按定义、组成和因果顺序解释复杂概念，保留准确性，减少术语堆叠和无关展开"
+  default_prompt: "使用 $explain-clearly，用中文解释这个概念：先说明它是什么，再说明它怎样起作用。"
