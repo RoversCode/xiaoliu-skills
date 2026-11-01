@@ -1,87 +1,44 @@
 # 证据层级与发布终态
 
-## 风险决定证据深度
+## 按结论和风险选证据
 
-| 结论 | 最低证据 |
+复用当前任务已有且仍适用的证据；代码、配置、输入、环境或目标对象变化后，只重验受影响部分。用户或项目明确要求的检查点优先，不用本表新增必跑流程。
+
+| 结论 | 对应证据 |
 |---|---|
-| “文档链接有效” | 项目自己的 doc-link/index check 或逐链接存在性 |
-| “规则已同源” | realpath/readlink/import + 平台实际加载顺序 |
-| “代码实现是 X” | 当前目标分支代码、schema、配置与相关测试 |
-| “PR 已完成” | PR state=merged + merge commit；不能推导已部署 |
-| “已部署” | deploy marker/release 指向目标 commit + 服务 active |
-| “用户已看到新版本” | canonical 用户 URL/API 的真实响应，必要时同时比 origin/cache |
-| “可安全清场” | 相关改动已集成、需验证的运行环境含该改动、知识已收尾，且待清理对象无唯一未集成文件；只检查本次适用的条件 |
-| “已获准清场” | 当前用户请求、此前持续有效的授权或项目规则覆盖该清理动作；若没有授权则先询问 |
-| “整个项目干净” | 项目内所有适用事实面 verified；warning、pending 和 out-of-scope 单列 |
+| “相关文档链接有效” | 项目适用的链接检查或相关链接存在性 |
+| “规则已同源” | 相关 realpath/readlink/import 与实际加载关系 |
+| “代码实现是 X” | 当前代码、schema、配置和适用测试 |
+| “PR 已完成” | PR state=merged 与 merge commit；不能推导已部署 |
+| “已部署” | 目标 release/commit 与相应服务运行证据 |
+| “用户已看到新版本” | canonical 用户 URL/API 的真实响应；缓存相关时比较 origin/cache |
+| “可安全清理” | 对象无唯一未集成内容，需保留的知识和证据已有去处；仅核验适用条件 |
+| “已获准清理” | 当前请求或持续有效的具体授权覆盖对象和动作，且满足明确的阶段性确认要求 |
 
-代码直觉、旧 memory、commit message 和 cache-buster URL 都只能当线索，不能单独证明生产终态。
+旧 memory、commit message 和诊断用 cache-buster URL 是线索，不能独自证明生产终态。避免宣称“整个项目干净”，除非本次确实覆盖了该范围并有相应证据。
 
-## 真相矩阵
+## 记录相关发现
 
-对每个发现至少记录：
+小范围问题直接记录“事实来源、差异、动作或建议、验证依据”。只有跨环境或多个事实源相互冲突、确实需要比较时才用矩阵，列也按问题选择。不要求每个发现都填写 code/runtime/docs/rules/memory 等固定字段。
 
-```text
-topic: <事实主题>
-authority: <当前权威来源>
-code: verified-current | stale | n/a
-runtime: verified-current | stale | unverified | n/a
-docs: verified-current | stale | changed
-rules: verified-current | stale | changed | n/a
-memory: verified-current | stale | generated-read-only | changed | n/a
-action: <做了什么或为什么没做>
-verification: <命令、页面或门禁>
-```
+只有本次相关但无法确认的事实或必须完成的检查记为 `pending`；无关面无需调查，不列为阻塞项。最终摘要保留相关未闭合事项和结论的适用范围。
 
-用户不需要看到完整矩阵，但最终摘要必须保留未闭合状态。
+## 发布状态
 
-## 发布状态机
+有发布链的任务按已有证据区分：已实现、已本地验证、已推送或开 PR、已合并、已部署、已验证线上行为。只报告实际到达的状态；没有部署的单机任务无需补一条发布流水线。项目要求知识凭证、CI 或视觉验收时复用现有流程，不自动创建额外门禁或收尾回执。
 
-```text
-implemented
-  -> locally verified
-  -> pushed / PR opened
-  -> CI + required backtest/visual review passed
-  -> merged
-  -> deployed
-  -> live verified
-  -> knowledge closed + receipt recorded
-  -> cleanup scope and authorization checked
-  -> workspace cleaned where requested
-  -> post-cleanup audit passed
-```
+缓存、异步 worker 或多个客户端影响本次结论时，核实相关用户入口是否已更新。只验证一个表面时说明限制，不默认排查所有产品表面。
 
-状态机只用于实际存在 PR、部署与生产运行路径的项目。单机或尚未部署的工作直接标出适用终态；停在哪一格就按那一格汇报，不能用“基本完成”覆盖。
+## 清理前核对
 
-## 缓存和多表面产品
+只读审查停在建议与报告。清理已获授权时，按对象风险选必要检查：
 
-当用户可见内容经过 CDN、边缘缓存、搜索索引、异步 worker 或多客户端时，至少识别：
-
-- origin 是否为新内容；
-- canonical URL 是否仍为旧缓存；
-- API/页面/通知/RSS 是否共享同一数据出口；
-- deploy marker 是否在所有异步进程真正切换之后才写；
-- cache-buster 是否只是诊断，而非真实用户验收。
-
-只验证其中一个表面时，在结论里明确限制范围。
-
-## 清场前 gate
-
-清场可能销毁复盘证据，因此在需要清理时按顺序核对：
-
-1. 验证目标工作已集成；若任务涉及上线，再验证目标运行环境包含改动；
-2. 同步 docs/rules/获准记忆；
-3. 记录项目实际要求的 knowledge closeout receipt（若有）；
-4. 预览待删除 worktree/branch/db/artifact；
-5. 检查 dirty 文件和 patch equivalence；
-6. 核对用户已给的授权、项目规则与具体待清理范围；需要额外授权时，准备好可复核的清单后再询问；
-7. 执行获准的清理并重新审计工作区；
-8. 汇报实际清理结果及仍需保留的证据。
-
-目录名、分支年龄和 agent 会话是否关闭都不能证明可删除。
+- 对分支或 worktree，确认改动去向、dirty 文件和唯一未集成内容；需要时用 patch equivalence 辅助判断。
+- 对计划、调试文件或副本，确认仍需保留的知识和证据已有去处；不能仅凭名称或年龄删除。
+- 涉及发布回滚资源时，确认相关运行环境和回滚边界；普通文件清理不附加部署验收。
+- 复用已有具体授权；只有对象超出授权、状态变化影响原判断或用户/项目明确要求此阶段另行确认时，再准备具体清单并询问。先前授权不能跳过“结果汇报后再确认”等明确检查点。
+- 清理后检查所操作对象的结果，报告仍保留的内容；不因此重新审计整个工作区。
 
 ## 验证失败时
 
-- 同一失败第二次出现，停止盲重试，重新检查假设、环境和命令名。
-- 门禁要求机器可读 metadata 时，补正确留痕并触发新事件；不要用人工确认绕过可修复的格式问题。
-- 失败发生在生产写入前，明确说“尚未影响生产”；发生在切流后，先确认当前 active release 和回滚边界。
-- 任何未验证项保持 `pending`，不要为了摘要好看把它降格成 warning。
+相同失败再次出现时，检查假设、环境和命令，不盲目重复。已有门禁缺少必要记录时补正确证据，不伪造结果或绕过要求。生产写入前后分别说明实际影响；未完成的相关检查保持 `pending`，其余独立工作继续推进。
