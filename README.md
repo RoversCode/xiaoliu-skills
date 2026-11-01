@@ -61,3 +61,16 @@ npx skills add RoversCode/xiaoliu-skills --list
 ```
 
 安装后可在 Agent 中调用对应 skill；Codex 中例如输入 `$neat-freak`。如果新 skill 没有出现，重新打开 Agent。模板、脚本和参考文件随 skill 目录一起安装。
+
+## 维护与验证
+
+修改 `skills/` 中的源文件，工作流页面只维护技能之间的选择与交接。同名本地技能可能来自其他仓库，更新前先核对差异并保留恢复副本，迁移约定见 [软件开发工作流](workflows/software-development/README.md#本地版本与迁移)。
+
+盘点脚本的行为测试仅使用独立临时项目，覆盖目录排除、软链、空 Git 仓库和只读边界：
+
+```sh
+python3 -m unittest discover -s tests -v
+bash -n skills/neat-freak/scripts/audit-inventory.sh
+```
+
+技能正文的流程变化还需用对应用户场景检查：明确的小修改、只读审查、跨会话恢复、部分问题待答、复用验证和已有清理授权。格式与脚本检查不能单独证明这些决策正确；只调整措辞或链接时，核对受影响内容即可。
